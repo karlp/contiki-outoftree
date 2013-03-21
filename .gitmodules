@@ -1,3 +1,6 @@
 [submodule "contiki"]
 	path = contiki
 	url = https://github.com/contiki-os/contiki.git
+[submodule "libopencm3"]
+	path = libopencm3
+	url = git@github.com:karlp/libopencm3.git
