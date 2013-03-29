@@ -16,7 +16,7 @@ configure_mcu_clocks(void)
 
 	/* Enable clocks for USART1 (and the gpios it's connected to) */
 	rcc_peripheral_enable_clock(&RCC_AHBENR, RCC_AHBENR_GPIOAEN);
-	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB2ENR_USART1EN);
+	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_USART1EN);
 }
 
 int
