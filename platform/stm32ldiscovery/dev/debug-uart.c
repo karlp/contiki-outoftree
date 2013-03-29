@@ -27,8 +27,8 @@ void uart_init(int baud)
 	usart_enable(USART1);
 
 	/* This ensures stdio doesn't use its own buffers */
-	//setvbuf(stdin, NULL, _IONBF, 0);
-	//setvbuf(stdout, NULL, _IONBF, 0);
+	setvbuf(stdin, NULL, _IONBF, 0);
+	setvbuf(stdout, NULL, _IONBF, 0);
 }
 
 int uart_putchar(char c)
