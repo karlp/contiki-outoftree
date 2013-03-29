@@ -1,17 +1,21 @@
+#include <errno.h>
+#include <stdio.h>
+
+#include <sys/energest.h>
+#include <lib/ringbuf.h>
+
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/nvic.h>
 #include "uart-stm32-platform.h"
 
-#include <gqueue.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <errno.h>
-
-DECLARE_QUEUE(char, uart_tx_buf, 256);
-DECLARE_QUEUE(char, uart_rx_buf, 256);
+static struct ringbuf ringbuf_rx, ringbuf_tx;
+static uint8_t buf_rx[128];
+static uint8_t buf_tx[128];
 
 void uart_init(int baud)
 {
+	ringbuf_init(&ringbuf_rx, buf_rx, sizeof(buf_rx));
+	ringbuf_init(&ringbuf_tx, buf_tx, sizeof(buf_tx));
 	uart_init_gpio();
 
 	nvic_enable_irq(NVIC_USART1_IRQ);
@@ -35,8 +39,8 @@ int uart_putchar(char c)
 {
 	if( c == '\n')
 		uart_putchar('\r');
-	if(!queue_is_full(&uart_tx_buf)) {
-		queue_enqueue(&uart_tx_buf, &c);
+	if (ringbuf_elements(&ringbuf_tx) < ringbuf_size(&ringbuf_tx)) {
+		ringbuf_put(&ringbuf_tx, c);
 	} else {
 		return -ENOMEM;
 	}
@@ -48,8 +52,8 @@ int uart_putchar(char c)
 
 int uart_getchar(char *c)
 {
-	if(!queue_is_empty(&uart_rx_buf)) {
-		queue_dequeue(&uart_rx_buf, c);
+	if (ringbuf_elements(&ringbuf_rx) > 0) {
+		*c = ringbuf_get(&ringbuf_rx);
 		return 0;
 	} else {
 		return -ENODATA;
@@ -58,10 +62,11 @@ int uart_getchar(char *c)
 
 void usart1_isr(void)
 {
+	ENERGEST_ON(ENERGEST_TYPE_IRQ);
 	char c;
 	if (usart_get_flag(USART1, USART_SR_TXE)) {
-		if (!queue_is_empty(&uart_tx_buf)) {
-			queue_dequeue(&uart_tx_buf, &c);
+		if (ringbuf_elements(&ringbuf_tx) > 0) {
+			c = ringbuf_get(&ringbuf_tx);
 			usart_send(USART1, (uint16_t)c);
 		} else {
 			usart_disable_tx_interrupt(USART1);
@@ -70,9 +75,10 @@ void usart1_isr(void)
 
 
 	if (usart_get_flag(USART1, USART_SR_RXNE)) {
-		if (!queue_is_full(&uart_rx_buf)) {
+		if (ringbuf_elements(&ringbuf_rx) < ringbuf_size(&ringbuf_rx)) {
 			c = usart_recv(USART1);
-			queue_enqueue(&uart_rx_buf, &c);
+			ringbuf_put(&ringbuf_rx, c);
 		}
 	}
+	ENERGEST_OFF(ENERGEST_TYPE_IRQ);
 }

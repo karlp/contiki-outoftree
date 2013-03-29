@@ -1,5 +1,5 @@
 /**
- * USART driver for STM32F1xx w/ libopencm3 peripherl lib
+ * USART driver for STM32xx w/ libopencm3 peripheral lib
  * (c) 2012 Blessed Contraptions
  * Jeff Ciesielski <jeff.ciesielski@gmail.com>
  */

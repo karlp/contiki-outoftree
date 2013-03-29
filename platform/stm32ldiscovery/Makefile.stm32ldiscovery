@@ -13,7 +13,7 @@ OPENCM3_LIB=opencm3_stm32l1
 LINKERFILE=stm32l15xxb.ld
 
 CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_TARGET_MAIN)
-CONTIKI_TARGET_SOURCEFILES += uart-stm32-l1.c debug-uart.c newlib.c gqueue.c
+CONTIKI_TARGET_SOURCEFILES += uart-stm32-l1.c debug-uart.c newlib.c
 
 include $(CONTIKI)/cpu/arm/stm32f1x_cl/Makefile.stm32f1x_cl
 
