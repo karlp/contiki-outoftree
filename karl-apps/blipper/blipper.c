@@ -42,16 +42,56 @@
 #include <stdio.h> /* For printf() */
 #include "blipper.h"
 /*---------------------------------------------------------------------------*/
-PROCESS(foo_process, "Hello world process");
-AUTOSTART_PROCESSES(&foo_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(foo_process, ev, data)
-{
-  PROCESS_BEGIN();
+PROCESS(blipper_process, "periodic blipper process");
 
-  printf("Hello foo world\n");
-  blipper_start(CLOCK_SECOND * 3);
+// Not allowed to be in my own apps, must start them by hand :(
+//AUTOSTART_PROCESSES(&blipper_process);
+/*---------------------------------------------------------------------------*/
+PROCESS_THREAD(blipper_process, ev, data)
+{
+
+	clock_time_t *period;
+	PROCESS_BEGIN();
+	period = data;
+
+	PROCESS_EXITHANDLER(goto exit);
+
+  	printf("Hello blipper!\n");
+
+	
+	static int ticks = 0;
+	static struct etimer et; // Define the timer
+
+	etimer_set(&et, *period);
+	printf("Started timer\n");
+
+	while(1) {
+		PROCESS_WAIT_EVENT();
+// PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+		if(etimer_expired(&et)) { 
+			printf("Hit our timer expiry tick: %d\n", ticks);
+			etimer_reset(&et);
+			ticks++;
+		}
+		printf("Should get printed after any event, even if it wasn't ours....\n");
+	}
+	
   
+exit:
+	printf("Exiting....\n");
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
+
+void
+blipper_start(clock_time_t period)
+{
+  process_start(&blipper_process, (void *)&period);
+}
+/*---------------------------------------------------------------------------*/
+void
+blipper_stop(void)
+{
+  process_exit(&blipper_process);
+}
+
