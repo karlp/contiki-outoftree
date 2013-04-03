@@ -24,13 +24,12 @@ main()
 {
   configure_mcu_clocks();
   uart_init(115200);
-  printf("Initialising\n");
+  printf("Platform init complete\n");
 
   clock_init();
   process_init();
   process_start(&etimer_process, NULL);
   autostart_start(autostart_processes);
-  printf("Processes running\n");
   while(1) {
     do {
     } while(process_run() > 0);
