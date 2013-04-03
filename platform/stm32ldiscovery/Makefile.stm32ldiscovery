@@ -9,8 +9,8 @@ endif
 
 OPENCM3_BASE=libopencm3
 OPENCM3_FAMILY=STM32L1
-OPENCM3_LIB=opencm3_stm32l1
-LINKERFILE=stm32l15xxb.ld
+# Relative to any of the -L directories, (such as OPENCM3_BASE)
+LINKERFILE=stm32/l1/stm32l15xxb.ld
 
 CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_TARGET_MAIN)
 CONTIKI_TARGET_SOURCEFILES += uart-stm32-l1.c debug-uart.c newlib.c
