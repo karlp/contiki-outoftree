@@ -43,8 +43,8 @@
 #include "blipper.h"
 /*---------------------------------------------------------------------------*/
 PROCESS(foo_process, "Hello world process");
-PROCESS(wop_process, "eventer process");
-AUTOSTART_PROCESSES(&foo_process, &wop_process);
+PROCESS(callback_process, "callback process");
+AUTOSTART_PROCESSES(&foo_process, &callback_process);
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(foo_process, ev, data)
 {
@@ -60,14 +60,17 @@ PROCESS_THREAD(foo_process, ev, data)
 }
 /*---------------------------------------------------------------------------*/
 
-PROCESS_THREAD(wop_process, ev, data)
+struct ctimer ct;
+static void callback_demo(void *in) {
+	printf("In the callback!\n");
+}
+
+PROCESS_THREAD(callback_process, ev, data)
 {
 	PROCESS_BEGIN();
 
-	while(1) {
-                PROCESS_WAIT_EVENT();
-		printf("WW>> wop proc got an event!\n");
-	}
+	printf("callback about to be set...\n");
+	ctimer_set(&ct, 3 * CLOCK_SECOND, callback_demo, (void*) NULL);
 	
 	PROCESS_END();
 }
