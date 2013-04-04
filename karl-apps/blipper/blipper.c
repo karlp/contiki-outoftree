@@ -37,9 +37,11 @@
  *         Adam Dunkels <adam@sics.se>
  */
 
+#include <stdio.h> 
 #include "contiki.h"
+#include <sys/clock.h>
+#include <sys/etimer.h>
 
-#include <stdio.h> /* For printf() */
 #include "blipper.h"
 /*---------------------------------------------------------------------------*/
 PROCESS(blipper_process, "periodic blipper process");
@@ -50,13 +52,17 @@ PROCESS(blipper_process, "periodic blipper process");
 PROCESS_THREAD(blipper_process, ev, data)
 {
 
+	struct blipper_info *blinfo;
 	clock_time_t *period;
+	static char id;
 	PROCESS_BEGIN();
-	period = data;
+	blinfo = data;
+	period = &blinfo->period;
+	id = blinfo->id;
 
 	PROCESS_EXITHANDLER(goto exit);
 
-  	printf("Hello blipper!\n");
+  	printf("Hello blipper id: %c!\n", id);
 
 	
 	static int ticks = 0;
@@ -69,24 +75,25 @@ PROCESS_THREAD(blipper_process, ev, data)
 		PROCESS_WAIT_EVENT();
 // PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 		if(etimer_expired(&et)) { 
-			printf("Hit our timer expiry tick: %d\n", ticks);
+			printf("%c hit timer expiry tick: %d at clock time: %lu\n", id, ticks, clock_seconds());
 			etimer_reset(&et);
 			ticks++;
 		}
+		// Actually, events are per process, and the only event this process gets
+		// is the etimer...
 		printf("Should get printed after any event, even if it wasn't ours....\n");
 	}
 	
   
 exit:
 	printf("Exiting....\n");
-  PROCESS_END();
+	PROCESS_END();
 }
-/*---------------------------------------------------------------------------*/
 
 void
-blipper_start(clock_time_t period)
+blipper_start(struct blipper_info *blinfo)
 {
-  process_start(&blipper_process, (void *)&period);
+  process_start(&blipper_process, (void *)blinfo);
 }
 /*---------------------------------------------------------------------------*/
 void

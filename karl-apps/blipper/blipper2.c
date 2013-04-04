@@ -37,37 +37,66 @@
  *         Adam Dunkels <adam@sics.se>
  */
 
+#include <stdio.h> 
 #include "contiki.h"
+#include <sys/clock.h>
+#include <sys/etimer.h>
 
-#include <stdio.h> /* For printf() */
 #include "blipper.h"
 /*---------------------------------------------------------------------------*/
-PROCESS(foo_process, "Hello world process");
-PROCESS(wop_process, "eventer process");
-AUTOSTART_PROCESSES(&foo_process, &wop_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(foo_process, ev, data)
-{
-  PROCESS_BEGIN();
+PROCESS(blipper2_process, "periodic blipper2 process");
 
-  printf("Hello foo world\n");
-  static struct blipper_info bl1 = { CLOCK_SECOND * 2, 'a' };
-  static struct blipper_info bl2 = { CLOCK_SECOND * 5, 'b' };
-  blipper_start((void *)&bl1);
-  blipper2_start((void *)&bl2);
-  
-  PROCESS_END();
-}
+// Not allowed to be in my own apps, must start them by hand :(
+//AUTOSTART_PROCESSES(&blipper_process);
 /*---------------------------------------------------------------------------*/
-
-PROCESS_THREAD(wop_process, ev, data)
+PROCESS_THREAD(blipper2_process, ev, data)
 {
+
+	struct blipper_info *blinfo;
+	clock_time_t *period;
+	static char id;
 	PROCESS_BEGIN();
+	blinfo = data;
+	period = &blinfo->period;
+	id = blinfo->id;
+
+	PROCESS_EXITHANDLER(goto exit);
+
+  	printf("Hello blipper2 id: %c!\n", id);
+
+	
+	static int ticks = 0;
+	static struct etimer et; // Define the timer
+
+	etimer_set(&et, *period);
+	printf("Started timer\n");
 
 	while(1) {
-                PROCESS_WAIT_EVENT();
-		printf("WW>> wop proc got an event!\n");
+		//PROCESS_WAIT_EVENT();
+		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+		if(etimer_expired(&et)) { 
+			printf("%c hit timer expiry tick: %d at clock time: %lu\n", id, ticks, clock_seconds());
+			etimer_reset(&et);
+			ticks++;
+		}
+		printf("%c Should only print after our event....\n", id);
 	}
 	
+  
+exit:
+	printf("Exiting....\n");
 	PROCESS_END();
 }
+
+void
+blipper2_start(struct blipper_info *blinfo)
+{
+  process_start(&blipper2_process, (void *)blinfo);
+}
+/*---------------------------------------------------------------------------*/
+void
+blipper2_stop(void)
+{
+  process_exit(&blipper2_process);
+}
+
