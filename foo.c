@@ -53,8 +53,8 @@ PROCESS_THREAD(foo_process, ev, data)
   printf("Hello foo world\n");
   static struct blipper_info bl1 = { CLOCK_SECOND * 2, 'a' };
   static struct blipper_info bl2 = { CLOCK_SECOND * 5, 'b' };
-  blipper_start((void *)&bl1);
-  blipper2_start((void *)&bl2);
+  process_start(&blipper_process, (void*)&bl1);
+  process_start(&blipper2_process, (void*)&bl2);
   
   PROCESS_END();
 }

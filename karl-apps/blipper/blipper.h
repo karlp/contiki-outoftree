@@ -6,9 +6,7 @@ struct blipper_info {
 	char id;
 };
 
-void blipper_start(struct blipper_info *blinfo);
-void blipper_stop(void);
-void blipper2_start(struct blipper_info *blinfo);
-void blipper2_stop(void);
+PROCESS_NAME(blipper_process);
+PROCESS_NAME(blipper2_process);
 
 #endif

@@ -88,15 +88,3 @@ exit:
 	PROCESS_END();
 }
 
-void
-blipper2_start(struct blipper_info *blinfo)
-{
-  process_start(&blipper2_process, (void *)blinfo);
-}
-/*---------------------------------------------------------------------------*/
-void
-blipper2_stop(void)
-{
-  process_exit(&blipper2_process);
-}
-
