@@ -42,6 +42,8 @@
 #include <sys/clock.h>
 #include <sys/etimer.h>
 
+#include "dev/leds.h"
+
 #include "blipper.h"
 /*---------------------------------------------------------------------------*/
 PROCESS(blipper2_process, "periodic blipper2 process");
@@ -76,6 +78,11 @@ PROCESS_THREAD(blipper2_process, ev, data)
 		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 		if(etimer_expired(&et)) { 
 			printf("%c hit timer expiry tick: %d at clock time: %lu\n", id, ticks, clock_seconds());
+			if (ticks % 2 == 0) {
+				leds_toggle(LEDS_BLUE);
+			} else {
+				leds_toggle(LEDS_GREEN);
+			}
 			etimer_reset(&et);
 			ticks++;
 		}

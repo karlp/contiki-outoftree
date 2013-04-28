@@ -9,6 +9,8 @@
 
 #include <libopencm3/stm32/l1/rcc.h>
 
+#include "dev/leds.h"
+
 static void
 configure_mcu_clocks(void)
 {
@@ -27,6 +29,7 @@ main()
   printf("Platform init complete\n");
 
   clock_init();
+  leds_init();
   process_init();
   process_start(&etimer_process, NULL);
   ctimer_init();
