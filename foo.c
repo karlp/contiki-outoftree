@@ -38,9 +38,12 @@
  */
 
 #include "contiki.h"
+#include "leds.h"
 
 #include <stdio.h> /* For printf() */
 #include "blipper.h"
+#include "serial-shell.h"
+#include "shell-ps.h"
 /*---------------------------------------------------------------------------*/
 PROCESS(foo_process, "Hello world process");
 PROCESS(callback_process, "callback process");
@@ -51,6 +54,11 @@ PROCESS_THREAD(foo_process, ev, data)
   PROCESS_BEGIN();
 
   printf("Hello foo world\n");
+  leds_blink();
+  serial_shell_init();
+  shell_ps_init();
+  shell_blink_init();
+  shell_powertrace_init();
   static struct blipper_info bl1 = { CLOCK_SECOND * 2, 'a' };
   static struct blipper_info bl2 = { CLOCK_SECOND * 5, 'b' };
   process_start(&blipper_process, (void*)&bl1);
@@ -63,6 +71,7 @@ PROCESS_THREAD(foo_process, ev, data)
 struct ctimer ct;
 static void callback_demo(void *in) {
 	printf("In the callback!\n");
+	leds_blink();
 }
 
 PROCESS_THREAD(callback_process, ev, data)

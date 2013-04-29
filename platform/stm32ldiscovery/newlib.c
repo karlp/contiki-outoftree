@@ -128,21 +128,14 @@ _sbrk(int incr)
 
 }
 
+/*
+ * Contiki handles input itself via serial_line_input_byte()
+ */
 int
 _read(int file, char *ptr, int len)
 {
-  char c = 0x00;
-
-  switch (file) {
-  case STDIN_FILENO:
-    uart_getchar(&c);
-    *ptr++ = c;
-    return 1;
-    break;
-  default:
     errno = EBADF;
     return -1;
-  }
 }
 
 int

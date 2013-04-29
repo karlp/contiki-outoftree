@@ -8,6 +8,7 @@
 
 #define WITH_UIP 1
 #define WITH_ASCII 1
+#define WITH_SERIAL_LINE_INPUT 1
 
 #define CLOCK_CONF_SECOND 1000
 
