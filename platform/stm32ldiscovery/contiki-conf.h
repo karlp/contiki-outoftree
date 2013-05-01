@@ -10,6 +10,8 @@
 #define WITH_ASCII 1
 #define WITH_SERIAL_LINE_INPUT 1
 
+#define DEBUG_UART_CONF 2
+
 #define CLOCK_CONF_SECOND 1000
 
 /* These names are deprecated, use C99 names. */

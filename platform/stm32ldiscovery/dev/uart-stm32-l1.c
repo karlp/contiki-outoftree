@@ -1,16 +1,45 @@
+#include "contiki-conf.h"
+#include "debug-uart-arch.h"
+#include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/l1/gpio.h>
 
-void uart_init_gpio(void)
+static void uart_init_gpio_usart1(void)
 {
-        /* Setup GPIO pins for USART2 transmit. */
-        gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9);
-        gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO10);
-        /* Setup USART2 TX pin as alternate function. */
-        gpio_set_af(GPIOA, GPIO_AF7, GPIO9);
-        gpio_set_af(GPIOA, GPIO_AF7, GPIO10);
+	/* Enable clocks for USART1 (and the gpios it's connected to) */
+	rcc_peripheral_enable_clock(&RCC_AHBENR, RCC_AHBENR_GPIOAEN);
+	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_USART1EN);
+	/* Setup USART1 pins to Alternate Function */
+	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO10);
+	/* Setup Alternate Function 7 - usart */
+	gpio_set_af(GPIOA, GPIO_AF7, GPIO9 | GPIO10);
 
-        /* USART lines should idle high */
-        gpio_set(GPIOA, GPIO9);
-        gpio_set(GPIOA, GPIO10);
+	/* USART lines should idle high */
+	gpio_set(GPIOA, GPIO9 | GPIO10);
+}
+
+static void uart_init_gpio_usart2(void)
+{
+	/* Enable clocks for USART1 (and the gpios it's connected to) */
+	rcc_peripheral_enable_clock(&RCC_AHBENR, RCC_AHBENR_GPIOAEN);
+	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_USART2EN);
+	/* Setup USART1 pins to Alternate Function */
+	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO2 | GPIO3);
+	/* Setup Alternate Function 7 - usart */
+	gpio_set_af(GPIOA, GPIO_AF7, GPIO2 | GPIO3);
+
+	/* USART lines should idle high */
+	gpio_set(GPIOA, GPIO2 | GPIO3);
+}
+
+void uart_init_arch(void)
+{
+	// Example platform shows all the options ;)
+#if DEBUG_UART_CONF == 1
+	uart_init_gpio_usart1();
+#elif DEBUG_UART_CONF == 2
+	uart_init_gpio_usart2();
+#else
+#error No support in this example platform for other uarts!
+#endif
 }
 

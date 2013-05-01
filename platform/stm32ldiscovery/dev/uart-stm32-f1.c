@@ -1,5 +1,5 @@
+#include <debug-uart-arch.h>
 #include <libopencm3/stm32/f1/gpio.h>
-#include "uart-stm32-platform.h"
 void uart_init_gpio(void)
 {
         gpio_set_mode(GPIOA,
