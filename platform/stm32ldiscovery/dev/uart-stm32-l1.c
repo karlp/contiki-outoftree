@@ -3,6 +3,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/l1/gpio.h>
 
+#if DEBUG_UART_CONF == 1
 static void uart_init_gpio_usart1(void)
 {
 	/* Enable clocks for USART1 (and the gpios it's connected to) */
@@ -16,7 +17,9 @@ static void uart_init_gpio_usart1(void)
 	/* USART lines should idle high */
 	gpio_set(GPIOA, GPIO9 | GPIO10);
 }
+#endif
 
+#if DEBUG_UART_CONF == 2
 static void uart_init_gpio_usart2(void)
 {
 	/* Enable clocks for USART1 (and the gpios it's connected to) */
@@ -30,6 +33,7 @@ static void uart_init_gpio_usart2(void)
 	/* USART lines should idle high */
 	gpio_set(GPIOA, GPIO2 | GPIO3);
 }
+#endif
 
 void uart_init_arch(void)
 {
