@@ -26,7 +26,7 @@
  */
 #include "dev/leds.h"
 
-#include <libopencm3/stm32/l1/rcc.h>
+#include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 
 

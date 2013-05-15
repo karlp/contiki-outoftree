@@ -1,7 +1,7 @@
 #include "contiki-conf.h"
 #include "debug-uart-arch.h"
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/l1/gpio.h>
+#include <libopencm3/stm32/gpio.h>
 
 #if DEBUG_UART_CONF == 1
 static void uart_init_gpio_usart1(void)
@@ -22,10 +22,10 @@ static void uart_init_gpio_usart1(void)
 #if DEBUG_UART_CONF == 2
 static void uart_init_gpio_usart2(void)
 {
-	/* Enable clocks for USART1 (and the gpios it's connected to) */
+	/* Enable clocks for USART2 (and the gpios it's connected to) */
 	rcc_peripheral_enable_clock(&RCC_AHBENR, RCC_AHBENR_GPIOAEN);
 	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_USART2EN);
-	/* Setup USART1 pins to Alternate Function */
+	/* Setup USART2 pins to Alternate Function */
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO2 | GPIO3);
 	/* Setup Alternate Function 7 - usart */
 	gpio_set_af(GPIOA, GPIO_AF7, GPIO2 | GPIO3);

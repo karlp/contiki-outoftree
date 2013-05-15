@@ -11,7 +11,7 @@
 #include <dev/leds.h>
 
 #include "contiki-conf.h"
-#include <libopencm3/stm32/l1/rcc.h>
+#include <libopencm3/stm32/rcc.h>
 
 
 static void
