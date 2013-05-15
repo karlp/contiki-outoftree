@@ -1,0 +1,27 @@
+CONTIKI_TARGET_DIRS = . dev
+# Master clock frequency
+MCK=24000000
+CFLAGS+=-DAUTOSTART_ENABLE
+
+ifndef CONTIKI_TARGET_MAIN
+CONTIKI_TARGET_MAIN = contiki-main.c
+endif
+
+OPENCM3_BASE=libopencm3
+OPENCM3_FAMILY=STM32F1
+# Relative to any of the -L directories, (such as OPENCM3_BASE)
+LINKERSCRIPT=stm32/f1/stm32f100xb.ld
+
+CONTIKI_CORE_SOURCEFILES += leds.c
+CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_CORE_SOURCEFILES)
+CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_TARGET_MAIN)
+CONTIKI_TARGET_SOURCEFILES += uart-stm32-f1.c debug-uart.c newlib.c leds-arch.c
+
+include $(CONTIKI)/cpu/arm/stm32-ocm3/Makefile.stm32-ocm3
+
+contiki-$(TARGET).a: ${addprefix $(OBJECTDIR)/,symbols.o}
+
+ifndef BASE_IP
+BASE_IP := 172.16.1.1
+endif
+
