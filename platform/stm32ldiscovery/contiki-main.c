@@ -17,7 +17,7 @@
 static void
 configure_mcu_clocks(void)
 {
-	rcc_clock_setup_pll(&clock_vrange1_config[CLOCK_VRANGE1_HSI_PLL_32MHZ]);
+	rcc_clock_setup_pll(&clock_config[CLOCK_VRANGE1_HSI_PLL_32MHZ]);
 }
 
 int
