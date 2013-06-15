@@ -17,6 +17,8 @@ CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_CORE_SOURCEFILES)
 CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_TARGET_MAIN)
 CONTIKI_TARGET_SOURCEFILES += uart-stm32-l1.c debug-uart.c newlib.c leds-arch.c
 
+CLEAN += *.stm32ldiscovery
+
 include $(CONTIKI)/cpu/arm/stm32-ocm3/Makefile.stm32-ocm3
 
 ifndef BASE_IP
