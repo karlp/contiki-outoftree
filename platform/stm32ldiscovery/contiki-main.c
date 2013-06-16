@@ -25,9 +25,10 @@ main()
 {
   configure_mcu_clocks();
   uart_init(115200);
-  printf("Platform init complete\n");
+  printf("Platform init complete, starting contiki init\n");
 
   clock_init();
+  rtimer_init();
   leds_init();
   process_init();
 #if WITH_SERIAL_LINE_INPUT
