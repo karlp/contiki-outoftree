@@ -15,6 +15,8 @@ CONTIKI_CORE_SOURCEFILES += leds.c
 CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_CORE_SOURCEFILES)
 CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_TARGET_MAIN)
 CONTIKI_TARGET_SOURCEFILES += uart-stm32-l1.c debug-uart.c newlib.c leds-arch.c
+# TODO - eventually, this would be in the cpu dir.
+CONTIKI_TARGET_SOURCEFILES += rtimer-arch.c
 
 CLEAN += *.stm32ldiscovery
 
