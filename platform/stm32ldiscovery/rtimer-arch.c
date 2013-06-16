@@ -38,147 +38,66 @@
 
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/exti.h>
-#include <libopencm3/stm32/pwr.h>
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/rtc.h>
+#include <libopencm3/stm32/timer.h>
 
 static volatile rtimer_clock_t next_trigger;
-static uint32_t now_msb;
+static volatile uint32_t latest_hard_count;
+static uint32_t last_load;
 static uint32_t next_alarm;
 
-#define RTC_RELOAD_IDLE 0xffff
+#define TIMER_RTIMER TIM11
+#define TIMER_RELOAD_IDLE 0xffff
 
-void rtc_wkup_isr(void)
+void tim11_isr()
 {
-	ENERGEST_ON(ENERGEST_TYPE_IRQ);
-
-	// If this was a periodic isr, just update the time.
-	// otherwise, we need to run tasks...
-
-
-	// but we also need to wakeup at set times
-
-	/* clear flag, not write protected */
-	RTC_ISR &= ~(RTC_ISR_WUTF);
-	exti_reset_request(EXTI20);
-	/*
-	 * Make sure we're really awake! We need to do this
-	 * before calling the next rtimer_task, since the task may need the RF.
-	 */
-	//lpm_exit();
-
-	rtimer_run_next();
-
-	ENERGEST_OFF(ENERGEST_TYPE_IRQ);
-
+	timer_clear_flag(TIMER_RTIMER, TIM_SR_UIF);
+	latest_hard_count += last_load +  1;
 }
 
 /**
- * \brief Turn on the RTC periph and prepare as much as possible
+ * \brief Setup as much as we can of the hard timing infrastructure
  *
- *        The Sleep Timer starts ticking automatically as soon as the device
- *        turns on. We don't need to turn on interrupts before the first call
- *        to rtimer_arch_schedule()
  */
 void
 rtimer_arch_init(void)
 {
-	/* turn on power block to enable unlocking */
-	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
-	pwr_disable_backup_domain_write_protect();
+	latest_hard_count = 0;
+	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_TIM11EN);
+	nvic_enable_irq(NVIC_TIM11_IRQ);
 
-	/* reset rtc */
-	RCC_CSR |= RCC_CSR_RTCRST;
-	RCC_CSR &= ~RCC_CSR_RTCRST;
+	// joy of joys, conflict namespace with contiki:
+	// timer_reset(TIMER_RTIMER);
+	rcc_peripheral_reset(&RCC_APB2RSTR, RCC_APB2RSTR_TIM11RST);
+	rcc_peripheral_clear_reset(&RCC_APB2RSTR, RCC_APB2RSTR_TIM11RST);
 
-	/* LSE vs LSI (hint: you want LSE)*/
-#if (RTIMER_EXTERNAL_CRYSTAL == 1)
-	rcc_osc_on(LSE);
-	rcc_wait_for_osc_ready(LSE);
-	rcc_rtc_select_clock(RCC_CSR_RTCSEL_LSE);
-#else
-	rcc_osc_on(LSI);
-	rcc_wait_for_osc_ready(LSI);
-	rcc_rtc_select_clock(RCC_CSR_RTCSEL_LSI);
-#endif
-
-	/* ?! Stdperiph examples don't turn this on until _afterwards_ which
-	 * simply doesn't work.  It must be on at least to be able to configure it */
-	RCC_CSR |= RCC_CSR_RTCEN;
-
-	rtc_unlock();
-	/* enter init mode */
-	RTC_ISR |= RTC_ISR_INIT;
-	while ((RTC_ISR & RTC_ISR_INITF) == 0)
-		;
-
-	/* We don't need these for wakeup rtimers, so don't set them.
-	  (These are the defaults for 1hz out)
-	u32 sync = 255;
-	u32 async = 127;
-	rtc_set_prescaler(sync, async);
+	// Enable external clock mode 2 (ETR), no filtering, no clock div.
+	TIM_SMCR(TIMER_RTIMER) = TIM_SMCR_ECE | TIM_SMCR_ETPS_OFF | TIM_SMCR_ETF_OFF;
+	/*
+	 *  From AN4013
+	 * Update_event = ETR_CLK/((ETR_PSC)*(PSC + 1)*(ARR + 1)*(RCR + 1))
+	 * 32768/(1*(0+1)*(0xffff+1)*(1)
+	 * = 0.5Hz when in idle mode.
 	 */
-
-	/* exit init mode */
-	RTC_ISR &= ~(RTC_ISR_INIT);
-
-	/* and write protect again */
-	rtc_lock();
-
-	/* and finally enable the clock */
-	RCC_CSR |= RCC_CSR_RTCEN;
-
-	/* And wait for synchro.. */
-	rtc_wait_for_synchro();
-}
-
-static int setup_rtc_wakeup(int ticks)
-{
-	rtc_unlock();
-
-	/* ensure wakeup timer is off */
-	RTC_CR &= ~RTC_CR_WUTE;
-
-	/* Wait until we can write */
-	while ((RTC_ISR & RTC_ISR_WUTWF) == 0)
-		;
-
-	RTC_WUTR = ticks - 1;
-
-	/* 
-	 * Use the fastest clock we have, to get the most resolution
-	 * contiki uses this for "short" times, not for hours and days.
-	 */
-	RTC_CR &= ~(RTC_CR_WUCLKSEL_MASK << RTC_CR_WUCLKSEL_SHIFT);
-	RTC_CR |= (RTC_CR_WUCLKSEL_RTC_DIV2 << RTC_CR_WUCLKSEL_SHIFT);
-
-	/* Restart WakeUp unit */
-	RTC_CR |= RTC_CR_WUTE;
-
-	/* Enable wakeup when we're finished */
-	RTC_CR |= RTC_CR_WUTIE;
-
-	/* done with rtc registers, lock them again */
-	rtc_lock();
-	nvic_enable_irq(NVIC_RTC_WKUP_IRQ);
-
-	/* EXTI line 20 is the wakeup interrupt */
-	exti_set_trigger(EXTI20, EXTI_TRIGGER_RISING);
-	exti_enable_request(EXTI20);
-	return 0;
+	// 
+	timer_set_prescaler(TIMER_RTIMER, 0); // PSC
+	last_load = TIMER_RELOAD_IDLE;
+	timer_set_period(TIMER_RTIMER, last_load);
+	timer_enable_counter(TIMER_RTIMER);
+	timer_enable_irq(TIMER_RTIMER, TIM_DIER_UIE);
 }
 
 /**
  * \brief Returns the current real-time clock time
  * \return The current rtimer time in ticks.
  * This is whatever we have stored from before last interrupts, plus where the
- * rtc timer is currently up to. (remembering that it's a down counter)
+ * timer is currently up to.
  */
 rtimer_clock_t
 rtimer_arch_now()
 {
-	uint32_t extra = RTC_RELOAD_IDLE - RTC_WUTR;
-	return now_msb + extra;
+	uint32_t extra = timer_get_counter(TIMER_RTIMER);
+	return latest_hard_count + extra;
 }
 
 void
