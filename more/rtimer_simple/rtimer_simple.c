@@ -66,8 +66,9 @@ PROCESS_THREAD(rtimer_simple_process, ev, data)
 		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 		/* Reset the etimer to trig again in 1 second */
 		rtimer_clock_t now = RTIMER_NOW();
-		printf("tick: %d clock time: %lu, rtimer: %lu (%#x)\n",
-			ticks, clock_seconds(), now, now);
+		float nowf = now / (RTIMER_SECOND * 1.0);
+		printf("tick: %d clock time: %lu, rtimer: %lu (%#lx), nowf: %f\n",
+			ticks, clock_seconds(), now, now, nowf);
 		ticks++;
 		etimer_reset(&et);
 		/* ... */
