@@ -43,16 +43,41 @@
 #include <libopencm3/stm32/timer.h>
 
 static volatile rtimer_clock_t next_trigger;
-static volatile uint32_t latest_hard_count;
-static uint32_t last_load;
+static volatile rtimer_clock_t latest_hard_count;
+static volatile int rtimer_late_count = 0;
 
 #define TIMER_RTIMER TIM11
 #define TIMER_RELOAD_IDLE 0xffff
 
 void tim11_isr()
 {
-	timer_clear_flag(TIMER_RTIMER, TIM_SR_UIF);
-	latest_hard_count += last_load +  1;
+	ENERGEST_ON(ENERGEST_TYPE_IRQ);
+	if (timer_get_flag(TIMER_RTIMER, TIM_SR_UIF)) {
+		timer_clear_flag(TIMER_RTIMER, TIM_SR_UIF);
+		latest_hard_count += TIMER_RELOAD_IDLE + 1;
+		int epoch_next = next_trigger >> 16;
+		int epoch_now = latest_hard_count >> 16;
+		if (epoch_next == epoch_now) {
+			// we've reached the right "epoch", turn on the 
+			// capture compare for the remainder!
+			timer_set_oc_value(TIMER_RTIMER, TIM_OC1, next_trigger & 0xffff);
+			// TODO - put this in the init code?
+			timer_set_oc_mode(TIMER_RTIMER, TIM_OC1, TIM_OCM_ACTIVE);
+			timer_enable_irq(TIMER_RTIMER, TIM_DIER_CC1IE);
+		} 
+//		else if (epoch_next < epoch_now) {
+//			// SHIT!
+//			rtimer_late_count++;
+//			rtimer_run_next();
+//		}
+	}
+	
+	if (timer_get_flag(TIMER_RTIMER, TIM_SR_CC1IF)) {
+		timer_clear_flag(TIMER_RTIMER, TIM_SR_CC1IF);
+		timer_disable_irq(TIMER_RTIMER, TIM_DIER_CC1IE);
+		rtimer_run_next();
+	}
+	ENERGEST_OFF(ENERGEST_TYPE_IRQ);
 }
 
 /**
@@ -74,10 +99,14 @@ rtimer_arch_init(void)
 	/* TODO - is it even worth allowing running this off LSI? (It needs lots
 	 * of juggling the inputs, and it's probably not accurate enough anyway)
 	 */
+#if (RTIMER_EXTERNAL_CRYSTAL == 0)
+#error Running the rtimer off the LSI is not yet supported
+#else
 	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
 	pwr_disable_backup_domain_write_protect();
 	rcc_osc_on(LSE);
 	rcc_wait_for_osc_ready(LSE);
+#endif
 
 	// Enable external clock mode 2 (ETR), no filtering, no clock div.
 	TIM_SMCR(TIMER_RTIMER) = TIM_SMCR_ECE | TIM_SMCR_ETPS_OFF | TIM_SMCR_ETF_OFF;
@@ -89,8 +118,7 @@ rtimer_arch_init(void)
 	 */
 	// 
 	timer_set_prescaler(TIMER_RTIMER, 0); // PSC
-	last_load = TIMER_RELOAD_IDLE;
-	timer_set_period(TIMER_RTIMER, last_load);
+	timer_set_period(TIMER_RTIMER, TIMER_RELOAD_IDLE);
 	timer_enable_counter(TIMER_RTIMER);
 	timer_enable_irq(TIMER_RTIMER, TIM_DIER_UIE);
 }
@@ -111,4 +139,5 @@ rtimer_arch_now()
 void
 rtimer_arch_schedule(rtimer_clock_t t)
 {
+	next_trigger = t;
 }

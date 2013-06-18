@@ -18,6 +18,7 @@
  */
 typedef uint32_t rtimer_clock_t;
 #define RTIMER_CLOCK_LT(a,b)     ((int32_t)((a)-(b)) < 0)
+// Defaults on #define RTIMER_CONF_EXTERNAL_CRYSTAL 0
 
 #define CLOCK_CONF_SECOND 1000
 

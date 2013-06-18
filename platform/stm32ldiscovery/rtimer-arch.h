@@ -32,16 +32,11 @@
  *
  * Implementation of the rtimer module for STM32L1 parts.
  * 
- * Should work on most stm32 platforms with the rtcv2 peripheral.  The general
- * plan is to run the RTC Wake Up timer on LSE or LSI div 2, which is as fast
- * as we can go.  That unfortunately gives us a maximum resolution of ~61uSec.
- * Not ideal, but "good enough"
+ * Should work on any platform that lets you run a timer off the LSE. Does a lot
+ * of juggling to deal with the timer only being 16bit, but wanting to support
+ * intervals greater than 16bits, at any point.
  * 
- * Unfortunately, the wakeup timer is only 16bit, 
- * 
- *
- * 
- * * @{
+ * @{
  */
 /**
  * \file

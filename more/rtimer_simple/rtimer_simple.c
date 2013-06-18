@@ -37,41 +37,107 @@
 #include <sys/etimer.h>
 #include <sys/rtimer.h>
 
-/*---------------------------------------------------------------------------*/
-PROCESS(rtimer_simple_process, "periodic rtimer_simple process");
 PROCESS(foo_process, "bah");
+PROCESS(eetimer_process, "periodic etimer_simple process");
+PROCESS(rrtimer_process, "periodic rtimer_simple process");
+PROCESS(timer_test_process, "test code for timing comparisons");
 AUTOSTART_PROCESSES(&foo_process);
+
+static struct rtimer rt;
+static int rticks;
 
 PROCESS_THREAD(foo_process, ev, data)
 {
 	PROCESS_BEGIN();
 
 	printf("Hello foo world\n");
-	process_start(&rtimer_simple_process, NULL);
+
+	process_start(&eetimer_process, NULL);
+	process_start(&rrtimer_process, NULL);
+	//process_start(&timer_test_process, NULL);
 
 	PROCESS_END();
 }
 
-PROCESS_THREAD(rtimer_simple_process, ev, data)
+/**
+ * 
+ * @param process_pt
+ * @param ev
+ * @param data
+ * @return 
+ */
+PROCESS_THREAD(eetimer_process, ev, data)
 {
 	static struct etimer et;
 	static int ticks;
 	PROCESS_BEGIN();
-	printf("Hello rtimer_simple\n");
-
-	/* Delay 1 second */
+	printf("EEE: Hello etimer\n");
 	etimer_set(&et, CLOCK_SECOND / 4);
-
 	while (1) {
 		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 		/* Reset the etimer to trig again in 1 second */
 		rtimer_clock_t now = RTIMER_NOW();
 		float nowf = now / (RTIMER_SECOND * 1.0);
-		printf("tick: %d clock time: %lu, rtimer: %lu (%#lx), nowf: %f\n",
+		printf("EEE: tick: %d clock time: %lu, rtimer: %lu (%#lx), nowf: %f\n",
 			ticks, clock_seconds(), now, now, nowf);
 		ticks++;
 		etimer_reset(&et);
-		/* ... */
 	}
+	PROCESS_END();
+}
+
+void
+rt_callback(struct rtimer *t, void *ptr)
+{
+	rtimer_clock_t now = RTIMER_NOW();
+	float nowf = now / (RTIMER_SECOND * 1.0);
+	printf("RRRR: %c tick %d clock: %lu, rtimer: %lu (%#lx), nowf: %f\n",
+		*(char *)ptr, rticks, clock_seconds(), now, now, nowf);
+	rticks++;
+	int rc = rtimer_set(t, RTIMER_TIME(t) + (RTIMER_SECOND / 4), 1,
+		rt_callback, ptr);
+	printf("RRRR: rtimer_set returned %d\n", rc);
+
+}
+
+PROCESS_THREAD(rrtimer_process, ev, data)
+{
+	static char demo_data = 'k';
+	PROCESS_BEGIN();
+	printf("RRRR_a: Hello rtimer\n");
+	int rc = rtimer_set(&rt, RTIMER_NOW() + (RTIMER_SECOND >> 1), 1,
+		rt_callback, &demo_data);
+	printf("RRRR_a: rtimer_set returned %d\n", rc);
+
+	PROCESS_END();
+}
+
+PROCESS_THREAD(timer_test_process, ev, data)
+{
+
+	static struct etimer et;
+	PROCESS_BEGIN();
+
+	etimer_set(&et, 2 * CLOCK_SECOND);
+
+	PROCESS_YIELD();
+
+	printf("-----------------------------------------\n");
+	printf("clock_delay_usec test, (10,000 x i) usec:\n");
+	printf("N.B. clock_delay_usec is more accurate than rtimers\n");
+	int i = 1;
+	while (i < 7) {
+		rtimer_clock_t start_count = RTIMER_NOW();
+		//clock_delay_usec(10000 * i);
+		clock_delay_usec(10000);
+		rtimer_clock_t end_count = RTIMER_NOW();
+		rtimer_clock_t diff = end_count - start_count;
+		printf("Requested: %u usec, Real: %lu rtimer ticks = ~%lu us\n",
+			10000 * i, diff, diff * 1000000 / RTIMER_SECOND);
+		i++;
+	}
+
+	printf("Done!\n");
+
 	PROCESS_END();
 }
