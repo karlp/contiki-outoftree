@@ -49,27 +49,33 @@ static volatile int rtimer_late_count = 0;
 #define TIMER_RTIMER TIM11
 #define TIMER_RELOAD_IDLE 0xffff
 
+void check_enable_fine_match(void)
+{
+	int epoch_next = next_trigger >> 16;
+	int epoch_now = latest_hard_count >> 16;
+	if (epoch_next == epoch_now) {
+		// we've reached the right "epoch", turn on the 
+		// capture compare for the remainder!
+		timer_set_oc_value(TIMER_RTIMER, TIM_OC1, next_trigger & 0xffff);
+		// TODO - put this in the init code?
+		timer_set_oc_mode(TIMER_RTIMER, TIM_OC1, TIM_OCM_ACTIVE);
+		timer_enable_irq(TIMER_RTIMER, TIM_DIER_CC1IE);
+	}
+	//		else if (epoch_next < epoch_now) {
+	//			// SHIT!
+	//			rtimer_late_count++;
+	//			rtimer_run_next();
+	//		}
+
+}
+
 void tim11_isr()
 {
 	ENERGEST_ON(ENERGEST_TYPE_IRQ);
 	if (timer_get_flag(TIMER_RTIMER, TIM_SR_UIF)) {
 		timer_clear_flag(TIMER_RTIMER, TIM_SR_UIF);
 		latest_hard_count += TIMER_RELOAD_IDLE + 1;
-		int epoch_next = next_trigger >> 16;
-		int epoch_now = latest_hard_count >> 16;
-		if (epoch_next == epoch_now) {
-			// we've reached the right "epoch", turn on the 
-			// capture compare for the remainder!
-			timer_set_oc_value(TIMER_RTIMER, TIM_OC1, next_trigger & 0xffff);
-			// TODO - put this in the init code?
-			timer_set_oc_mode(TIMER_RTIMER, TIM_OC1, TIM_OCM_ACTIVE);
-			timer_enable_irq(TIMER_RTIMER, TIM_DIER_CC1IE);
-		} 
-//		else if (epoch_next < epoch_now) {
-//			// SHIT!
-//			rtimer_late_count++;
-//			rtimer_run_next();
-//		}
+		check_enable_fine_match();
 	}
 	
 	if (timer_get_flag(TIMER_RTIMER, TIM_SR_CC1IF)) {
@@ -140,4 +146,6 @@ void
 rtimer_arch_schedule(rtimer_clock_t t)
 {
 	next_trigger = t;
+	check_enable_fine_match();
+
 }

@@ -72,7 +72,7 @@ PROCESS_THREAD(eetimer_process, ev, data)
 	static int ticks;
 	PROCESS_BEGIN();
 	printf("EEE: Hello etimer\n");
-	etimer_set(&et, CLOCK_SECOND / 4);
+	etimer_set(&et, CLOCK_SECOND);
 	while (1) {
 		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 		/* Reset the etimer to trig again in 1 second */
