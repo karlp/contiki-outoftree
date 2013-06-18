@@ -44,8 +44,6 @@ typedef unsigned int uip_stats_t;
 #define USB_EP1_SIZE 64
 #define USB_EP2_SIZE 64
 
-#define RAND_MAX 0x7fff
-
 /* Not everyone runs AHB at Sysclk speed */
 #ifndef AHB_SPEED
 #define AHB_SPEED MCK

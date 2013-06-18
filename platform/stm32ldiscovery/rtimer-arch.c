@@ -45,7 +45,6 @@
 static volatile rtimer_clock_t next_trigger;
 static volatile uint32_t latest_hard_count;
 static uint32_t last_load;
-static uint32_t next_alarm;
 
 #define TIMER_RTIMER TIM11
 #define TIMER_RELOAD_IDLE 0xffff
