@@ -38,6 +38,7 @@
 
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/exti.h>
+#include <libopencm3/stm32/pwr.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/timer.h>
 
@@ -70,6 +71,14 @@ rtimer_arch_init(void)
 	// timer_reset(TIMER_RTIMER);
 	rcc_peripheral_reset(&RCC_APB2RSTR, RCC_APB2RSTR_TIM11RST);
 	rcc_peripheral_clear_reset(&RCC_APB2RSTR, RCC_APB2RSTR_TIM11RST);
+
+	/* TODO - is it even worth allowing running this off LSI? (It needs lots
+	 * of juggling the inputs, and it's probably not accurate enough anyway)
+	 */
+	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
+	pwr_disable_backup_domain_write_protect();
+	rcc_osc_on(LSE);
+	rcc_wait_for_osc_ready(LSE);
 
 	// Enable external clock mode 2 (ETR), no filtering, no clock div.
 	TIM_SMCR(TIMER_RTIMER) = TIM_SMCR_ECE | TIM_SMCR_ETPS_OFF | TIM_SMCR_ETF_OFF;
