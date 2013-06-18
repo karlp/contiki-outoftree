@@ -94,9 +94,8 @@ rt_callback(struct rtimer *t, void *ptr)
 	printf("RRRR: %c tick %d clock: %lu, rtimer: %lu (%#lx), nowf: %f\n",
 		*(char *)ptr, rticks, clock_seconds(), now, now, nowf);
 	rticks++;
-	int rc = rtimer_set(t, RTIMER_TIME(t) + (RTIMER_SECOND / 4), 1,
+	rtimer_set(t, RTIMER_TIME(t) + (RTIMER_SECOND / 4), 1,
 		rt_callback, ptr);
-	printf("RRRR: rtimer_set returned %d\n", rc);
 
 }
 
@@ -105,9 +104,8 @@ PROCESS_THREAD(rrtimer_process, ev, data)
 	static char demo_data = 'k';
 	PROCESS_BEGIN();
 	printf("RRRR_a: Hello rtimer\n");
-	int rc = rtimer_set(&rt, RTIMER_NOW() + (RTIMER_SECOND >> 1), 1,
+	rtimer_set(&rt, RTIMER_NOW() + (RTIMER_SECOND >> 1), 1,
 		rt_callback, &demo_data);
-	printf("RRRR_a: rtimer_set returned %d\n", rc);
 
 	PROCESS_END();
 }
