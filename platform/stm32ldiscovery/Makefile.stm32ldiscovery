@@ -11,10 +11,11 @@ OPENCM3_FAMILY=STM32L1
 # Relative to any of the -L directories, (such as OPENCM3_BASE)
 LINKERSCRIPT=stm32/l1/stm32l15xxb.ld
 
-CONTIKI_CORE_SOURCEFILES += leds.c
+CONTIKI_CORE_SOURCEFILES += leds.c mrf24j40.c
 CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_CORE_SOURCEFILES)
 CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_TARGET_MAIN)
 CONTIKI_TARGET_SOURCEFILES += uart-stm32-l1.c debug-uart.c newlib.c leds-arch.c
+CONTIKI_TARGET_SOURCEFILES += mrf24j40-arch.c
 # TODO - eventually, this would be in the cpu dir.
 CONTIKI_TARGET_SOURCEFILES += rtimer-arch.c
 
