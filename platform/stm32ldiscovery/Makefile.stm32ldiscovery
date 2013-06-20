@@ -3,6 +3,9 @@ CONTIKI_TARGET_DIRS = . dev
 MCK=32000000
 CFLAGS+=-DAUTOSTART_ENABLE
 
+# TODO contiki has lots of aliasing, and it's not our job to fix it
+CFLAGS+= -fno-strict-aliasing
+
 ifndef CONTIKI_TARGET_MAIN
 CONTIKI_TARGET_MAIN = contiki-main.c
 endif
