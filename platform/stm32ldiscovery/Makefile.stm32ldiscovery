@@ -14,6 +14,12 @@ OPENCM3_FAMILY=STM32L1
 # Relative to any of the -L directories, (such as OPENCM3_BASE)
 LINKERSCRIPT=stm32/l1/stm32l15xxb.ld
 
+ifeq ($(UIP_CONF_IPV6),1)
+CFLAGS += -DWITH_UIP6=1
+endif
+
+CONTIKI_PLAT_DEFS += -D ADD_RSSI_AND_LQI_TO_PACKET
+
 CONTIKI_CORE_SOURCEFILES += leds.c mrf24j40.c
 CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_CORE_SOURCEFILES)
 CONTIKI_TARGET_SOURCEFILES += $(CONTIKI_TARGET_MAIN)
@@ -21,6 +27,8 @@ CONTIKI_TARGET_SOURCEFILES += uart-stm32-l1.c debug-uart.c newlib.c leds-arch.c
 CONTIKI_TARGET_SOURCEFILES += mrf24j40-arch.c
 # TODO - eventually, this would be in the cpu dir.
 CONTIKI_TARGET_SOURCEFILES += rtimer-arch.c
+# TODO - dummy implementation stolen from the native platform
+CONTIKI_TARGET_SOURCEFILES += watchdog.c
 
 CLEAN += *.stm32ldiscovery
 
