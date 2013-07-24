@@ -49,6 +49,7 @@ PROCESS_THREAD(tests, ev, data)
 	PROCESS_BEGIN();
 
 
+	/* etimer and ctimer are both built on the same base */
 	printf("TESTSTART{\"expected\":%d}\n", tick_count * 100);
 	etimer_set(&et, 100);
 	for (ticks = 0; ticks < tick_count; ticks++) {
@@ -59,6 +60,7 @@ PROCESS_THREAD(tests, ev, data)
 	printf("TESTEND\n");
 
 
+	/* clock_delay_usec is important for many hardware drivers */
 	printf("TESTSTART{\"expected\":%d}\n", tick_count * 100);
 	for (ticks = 0; ticks < tick_count; ticks++) {
 		for (i = 0; i < 100; i++) {
@@ -68,10 +70,18 @@ PROCESS_THREAD(tests, ev, data)
 	}
 	printf("TESTEND\n");
 
-	printf("TESTSTART{\"expected\":5000}\n");
-	clock_wait(5 * CLOCK_SECOND);
+	/*
+	 * timer is built on clock_wait, no need to test it specially,
+	 * test clock_seconds at the same time, used by stimers
+	 */
+	printf("TESTSTART{\"expected\":3000}\n");
+	i = clock_seconds();
+	clock_wait(3 * CLOCK_SECOND);
+	k = clock_seconds();
 	printf("TESTEND\n");
-
+	printf("clock_seconds delta=%d, expected %d (before: %d, after: %d)\n",
+		k - i, 3, i, k);
+	
 	PROCESS_END();
 }
 
