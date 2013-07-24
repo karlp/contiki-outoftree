@@ -40,17 +40,40 @@
 PROCESS(tests, "timer and clock test routines");
 AUTOSTART_PROCESSES(&tests);
 
+static int escape_hatch = 0;
+static int rtimer_finished = 0;
+
+void
+rtimer_escape_callback(void *data)
+{
+	struct ctimer *ct = data;
+	escape_hatch++;
+	printf("escape hatch = %d\n", escape_hatch);
+	ctimer_reset(ct);
+	process_poll(&tests);
+}
+
+void
+rtimer_test(struct rtimer *t, void *ptr)
+{
+	rtimer_finished = 1;
+	printf("RRRR rtimer finished!\n");
+	process_poll(&tests);
+}
+
 PROCESS_THREAD(tests, ev, data)
 {
 	static int tick_count = 10;
 	static int ticks = 0;
 	int i, k;
-	static struct etimer et; // Define the timer
+	static struct ctimer ct;
+	static struct etimer et;
+	static struct rtimer rt;
 	PROCESS_BEGIN();
 
 
 	/* etimer and ctimer are both built on the same base */
-	printf("TESTSTART{\"expected\":%d}\n", tick_count * 100);
+	printf("\nTESTSTART{\"expected\":%d}\n", tick_count * 100);
 	etimer_set(&et, 100);
 	for (ticks = 0; ticks < tick_count; ticks++) {
 		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
@@ -61,7 +84,7 @@ PROCESS_THREAD(tests, ev, data)
 
 
 	/* clock_delay_usec is important for many hardware drivers */
-	printf("TESTSTART{\"expected\":%d}\n", tick_count * 100);
+	printf("\nTESTSTART{\"expected\":%d}\n", tick_count * 100);
 	for (ticks = 0; ticks < tick_count; ticks++) {
 		for (i = 0; i < 100; i++) {
 			clock_delay_usec(1000);
@@ -74,14 +97,32 @@ PROCESS_THREAD(tests, ev, data)
 	 * timer is built on clock_wait, no need to test it specially,
 	 * test clock_seconds at the same time, used by stimers
 	 */
-	printf("TESTSTART{\"expected\":3000}\n");
+	printf("\nTESTSTART{\"expected\":3000}\n");
 	i = clock_seconds();
 	clock_wait(3 * CLOCK_SECOND);
 	k = clock_seconds();
 	printf("TESTEND\n");
 	printf("clock_seconds delta=%d, expected %d (before: %d, after: %d)\n",
 		k - i, 3, i, k);
-	
+
+
+	/*
+	 * If the rtimers are working correctly, this should stop at the right time
+	 */
+	printf("\nTESTSTART{\"expected\":2000}\n");
+	escape_hatch = 0;
+	rtimer_clock_t now = RTIMER_NOW();
+	rtimer_set(&rt, now + RTIMER_ARCH_SECOND * 2, 0, rtimer_test, NULL);
+	ctimer_set(&ct, 100, rtimer_escape_callback, &ct);
+	while (escape_hatch < 30 && !rtimer_finished) {
+		PROCESS_WAIT_EVENT();
+	}
+	ctimer_stop(&ct);
+	if (!rtimer_finished) {
+		printf("FAILURE: rtimers didn't fire!\n");
+	}
+	printf("TESTEND\n");
+
 	PROCESS_END();
 }
 
