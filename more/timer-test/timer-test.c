@@ -47,8 +47,9 @@ void
 rtimer_escape_callback(void *data)
 {
 	struct ctimer *ct = data;
-	escape_hatch++;
-	printf("escape hatch = %d\n", escape_hatch);
+	if (escape_hatch++ % 4 == 0) {
+		printf("escape hatch = %d\n", escape_hatch);
+	}
 	ctimer_reset(ct);
 	process_poll(&tests);
 }
@@ -90,6 +91,26 @@ PROCESS_THREAD(tests, ev, data)
 			clock_delay_usec(1000);
 		}
 		printf("clock_delay_usec: 100 * 1000usecs, %d/%d\n", ticks, tick_count);
+	}
+	printf("TESTEND\n");
+
+	/* clock_delay_usec is important for many hardware drivers */
+	printf("\nTESTSTART{\"expected\":%d}\n", tick_count * 100);
+	for (ticks = 0; ticks < tick_count; ticks++) {
+		for (i = 0; i < 5000; i++) {
+			clock_delay_usec(20);
+		}
+		printf("clock_delay_usec: 5000 * 20usecs, %d/%d\n", ticks, tick_count);
+	}
+	printf("TESTEND\n");
+
+	/* clock_delay_usec is important for many hardware drivers */
+	printf("\nTESTSTART{\"expected\":%d}\n", tick_count * 100);
+	for (ticks = 0; ticks < tick_count; ticks++) {
+		for (i = 0; i < 500; i++) {
+			clock_delay_usec(200);
+		}
+		printf("clock_delay_usec: 500 * 200usecs, %d/%d\n", ticks, tick_count);
 	}
 	printf("TESTEND\n");
 
