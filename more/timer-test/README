@@ -1,0 +1,96 @@
+This build uses a python script watching the serial output to calculate timing
+based on prints from a contiki process.  The contiki process knows how long it
+_should_ run for, but has no way of knowing for sure.
+
+This is inaccurate due to the delay of printing to a serial port at 115200 and
+usb pickup delays, so anything within a percent or so is pretty good.  It's
+something to help you find and fix totally busted timer/clock implementations.
+
+Usage:
+
+./stimmy -d /dev/ttyXXXX
+[flash and run firmware]
+
+The sample output below should be self explanatory.
+
+Platform init complete, starting contiki init
+2013-07-25 00:43:03,318 
+2013-07-25 00:43:03,319 TESTSTART{"expected":1000}
+2013-07-25 00:43:03,417 etimer tick 0/10
+2013-07-25 00:43:03,518 etimer tick 1/10
+2013-07-25 00:43:03,619 etimer tick 2/10
+2013-07-25 00:43:03,720 etimer tick 3/10
+2013-07-25 00:43:03,821 etimer tick 4/10
+2013-07-25 00:43:03,921 etimer tick 5/10
+2013-07-25 00:43:04,022 etimer tick 6/10
+2013-07-25 00:43:04,123 etimer tick 7/10
+2013-07-25 00:43:04,224 etimer tick 8/10
+2013-07-25 00:43:04,328 etimer tick 9/10
+2013-07-25 00:43:04,329 TESTEND
+2013-07-25 00:43:04,329 test took 1010.397911 vs expected 1000.000000, delta: 1.039791
+2013-07-25 00:43:04,329 timing drift greater than 0.5%?
+2013-07-25 00:43:04,330 
+2013-07-25 00:43:04,330 TESTSTART{"expected":1000}
+2013-07-25 00:43:04,428 clock_delay_usec: 100 * 1000usecs, 0/10
+2013-07-25 00:43:04,529 clock_delay_usec: 100 * 1000usecs, 1/10
+2013-07-25 00:43:04,630 clock_delay_usec: 100 * 1000usecs, 2/10
+2013-07-25 00:43:04,731 clock_delay_usec: 100 * 1000usecs, 3/10
+2013-07-25 00:43:04,831 clock_delay_usec: 100 * 1000usecs, 4/10
+2013-07-25 00:43:04,932 clock_delay_usec: 100 * 1000usecs, 5/10
+2013-07-25 00:43:05,033 clock_delay_usec: 100 * 1000usecs, 6/10
+2013-07-25 00:43:05,134 clock_delay_usec: 100 * 1000usecs, 7/10
+2013-07-25 00:43:05,235 clock_delay_usec: 100 * 1000usecs, 8/10
+2013-07-25 00:43:05,339 clock_delay_usec: 100 * 1000usecs, 9/10
+2013-07-25 00:43:05,339 TESTEND
+2013-07-25 00:43:05,339 test took 1009.047031 vs expected 1000.000000, delta: 0.904703
+2013-07-25 00:43:05,340 timing drift greater than 0.5%?
+2013-07-25 00:43:05,340 
+2013-07-25 00:43:05,341 TESTSTART{"expected":1000}
+2013-07-25 00:43:05,443 clock_delay_usec: 5000 * 20usecs, 0/10
+2013-07-25 00:43:05,551 clock_delay_usec: 5000 * 20usecs, 1/10
+2013-07-25 00:43:05,658 clock_delay_usec: 5000 * 20usecs, 2/10
+2013-07-25 00:43:05,766 clock_delay_usec: 5000 * 20usecs, 3/10
+2013-07-25 00:43:05,873 clock_delay_usec: 5000 * 20usecs, 4/10
+2013-07-25 00:43:05,981 clock_delay_usec: 5000 * 20usecs, 5/10
+2013-07-25 00:43:06,088 clock_delay_usec: 5000 * 20usecs, 6/10
+2013-07-25 00:43:06,196 clock_delay_usec: 5000 * 20usecs, 7/10
+2013-07-25 00:43:06,304 clock_delay_usec: 5000 * 20usecs, 8/10
+2013-07-25 00:43:06,415 clock_delay_usec: 5000 * 20usecs, 9/10
+2013-07-25 00:43:06,415 TESTEND
+2013-07-25 00:43:06,415 test took 1074.591875 vs expected 1000.000000, delta: 7.459188
+2013-07-25 00:43:06,416 timing drift greater than 0.5%?
+2013-07-25 00:43:06,416 
+2013-07-25 00:43:06,417 TESTSTART{"expected":1000}
+2013-07-25 00:43:06,513 clock_delay_usec: 500 * 200usecs, 0/10
+2013-07-25 00:43:06,614 clock_delay_usec: 500 * 200usecs, 1/10
+2013-07-25 00:43:06,714 clock_delay_usec: 500 * 200usecs, 2/10
+2013-07-25 00:43:06,815 clock_delay_usec: 500 * 200usecs, 3/10
+2013-07-25 00:43:06,917 clock_delay_usec: 500 * 200usecs, 4/10
+2013-07-25 00:43:07,017 clock_delay_usec: 500 * 200usecs, 5/10
+2013-07-25 00:43:07,118 clock_delay_usec: 500 * 200usecs, 6/10
+2013-07-25 00:43:07,219 clock_delay_usec: 500 * 200usecs, 7/10
+2013-07-25 00:43:07,320 clock_delay_usec: 500 * 200usecs, 8/10
+2013-07-25 00:43:07,425 clock_delay_usec: 500 * 200usecs, 9/10
+2013-07-25 00:43:07,425 TESTEND
+2013-07-25 00:43:07,426 test took 1008.728981 vs expected 1000.000000, delta: 0.872898
+2013-07-25 00:43:07,426 timing drift greater than 0.5%?
+2013-07-25 00:43:07,426 
+2013-07-25 00:43:07,427 TESTSTART{"expected":3000}
+2013-07-25 00:43:10,448 TESTEND
+2013-07-25 00:43:10,449 test took 3021.615028 vs expected 3000.000000, delta: 0.720501
+2013-07-25 00:43:10,449 timing drift greater than 0.5%?
+2013-07-25 00:43:10,450 clock_seconds delta=3, expected 3 (before: 4, after: 7)
+2013-07-25 00:43:10,451 
+2013-07-25 00:43:10,452 TESTSTART{"expected":2000}
+2013-07-25 00:43:10,542 escape hatch = 1
+2013-07-25 00:43:10,945 escape hatch = 5
+2013-07-25 00:43:11,348 escape hatch = 9
+2013-07-25 00:43:11,751 escape hatch = 13
+2013-07-25 00:43:12,155 escape hatch = 17
+2013-07-25 00:43:12,557 escape hatch = 21
+2013-07-25 00:43:12,961 escape hatch = 25
+2013-07-25 00:43:13,364 escape hatch = 29
+2013-07-25 00:43:13,467 FAILURE: rtimers didn't fire!
+2013-07-25 00:43:13,467 TESTEND
+2013-07-25 00:43:13,467 test took 3015.799046 vs expected 2000.000000, delta: 50.789952
+2013-07-25 00:43:13,468 timing drift greater than 0.5%?
