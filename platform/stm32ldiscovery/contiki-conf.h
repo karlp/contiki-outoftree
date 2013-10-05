@@ -24,6 +24,8 @@ typedef unsigned int uip_stats_t;
 
 /// From seedeye
 #define RF_CHANNEL                              12
+#define IEEE802154_CONF_PANID			0xcafe
+#define ADD_RSSI_AND_LQI_TO_PACKET		1
 
 #define PROFILE_CONF_ON 0
 #ifndef ENERGEST_CONF_ON
