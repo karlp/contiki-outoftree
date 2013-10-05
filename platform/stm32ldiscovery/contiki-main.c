@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <debug-uart.h>
 #include <sys/autostart.h>
 #include <sys/clock.h>
@@ -9,6 +10,7 @@
 #include <sys/procinit.h>
 #include <dev/serial-line.h>
 #include <dev/leds.h>
+#include <dev/mrf24j40.h>
 
 #include <contiki-net.h>
 #include <net/netstack.h>
