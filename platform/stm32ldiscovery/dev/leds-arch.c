@@ -24,6 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include <stdint.h>
 #include "dev/leds.h"
 
 #include <libopencm3/stm32/rcc.h>
@@ -44,7 +45,7 @@ void leds_arch_init(void)
 unsigned char leds_arch_get(void)
 {
 	unsigned char ret = 0;
-	u16 reg = gpio_get(LED_DISCO_PORT, LED_DISCO_PIN_BLUE | LED_DISCO_PIN_GREEN);
+	uint16_t reg = gpio_get(LED_DISCO_PORT, LED_DISCO_PIN_BLUE | LED_DISCO_PIN_GREEN);
 	if (reg & LED_DISCO_PIN_BLUE) {
 		ret |= LEDS_BLUE;
 	}
@@ -56,7 +57,7 @@ unsigned char leds_arch_get(void)
 
 void leds_arch_set(unsigned char leds)
 {
-	u32 reg = GPIO_ODR(LED_DISCO_PORT);
+	uint32_t reg = GPIO_ODR(LED_DISCO_PORT);
 	reg &= ~(LED_DISCO_PIN_GREEN | LED_DISCO_PIN_BLUE);
 	if (leds & LEDS_GREEN) {
 		reg |= LED_DISCO_PIN_GREEN;
