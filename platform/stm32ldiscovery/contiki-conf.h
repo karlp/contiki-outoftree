@@ -84,6 +84,10 @@ typedef unsigned int uip_stats_t;
 #define SICSLOWPAN_CONF_MAXAGE                  8
 #endif /* SICSLOWPAN_CONF_FRAG */
 
+// Configure NullRDC to do the right thing, if it's selected
+#define NULLRDC_802154_AUTOACK			1
+#define NULLRDC_802154_AUTOACK_HW		1
+
 /* General configuration options */
 #define UIP_CONF_STATISTICS                     0
 //#define UIP_CONF_LOGGING                        0
